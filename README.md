@@ -1,8 +1,8 @@
 # Fuel Route Optimizer API
 
-> Plan a cost-optimal road trip. Give it two US cities — get back the full driving route, the cheapest fuel stops, and the exact gallons to buy at each one.
+> Plan a cost-optimal road trip. Give it two US cities -- get back the full driving route, the cheapest fuel stops, and the exact gallons to buy at each one.
 
-Built with Django 5.2 LTS · OSRM · OpenRouteService · Python 3.12
+Built with Django 5.2 LTS | OSRM | OpenRouteService | Python 3.12
 
 ---
 
@@ -14,24 +14,24 @@ POST /api/v1/routes/
 ```
 
 Returns:
-- Full driving route as **GeoJSON** — drop it straight into any map library
+- Full driving route as **GeoJSON** -- drop it straight into any map library
 - Ordered fuel stops with **station name, highway exit, price, and exact gallons to buy**
 - Total fuel cost for the trip
-- Everything cached — repeat requests return in under 50ms
+- Everything cached -- repeat requests return in under 50ms
 
 ---
 
 ## Features
 
-- **Cost-optimal stops** — greedy algorithm that tracks real fuel levels, not approximations
-- **Real prices** — 8,151 US truck-stop stations from the OPIS dataset
-- **500-mile vehicle range** · **10 mpg** — fully configurable via environment variables
-- **Route simplification** — 13,000+ OSRM waypoints reduced to ~280 before spatial search (48× fewer calculations)
-- **Fast spatial search** — equirectangular projection instead of haversine per segment (5–8× faster)
-- **Two-tier cache** — geocodes cached 30 days, routes cached 24 hours
-- **Zero-config local dev** — SQLite + in-memory cache, no Docker required to get started
-- **Production-ready** — PostgreSQL + Redis + Gunicorn via Docker Compose
-- **Auto-generated API docs** — Swagger UI at `/api/docs/`
+- **Cost-optimal stops** -- greedy algorithm that tracks real fuel levels, not approximations
+- **Real prices** -- 8,151 US truck-stop stations from the OPIS dataset
+- **500-mile vehicle range** | **10 mpg** -- fully configurable via environment variables
+- **Route simplification** -- 13,000+ OSRM waypoints reduced to ~280 before spatial search (48x fewer calculations)
+- **Fast spatial search** -- equirectangular projection instead of haversine per segment (5–8x faster)
+- **Two-tier cache** -- geocodes cached 30 days, routes cached 24 hours
+- **Zero-config local dev** -- SQLite + in-memory cache, no Docker required to get started
+- **Production-ready** -- PostgreSQL + Redis + Gunicorn via Docker Compose
+- **Auto-generated API docs** -- Swagger UI at `/api/docs/`
 
 ---
 
@@ -39,7 +39,7 @@ Returns:
 
 ### 1. Get a free ORS API key
 
-Sign up at [openrouteservice.org](https://openrouteservice.org/dev/#/signup) → Dashboard → Tokens → Request a token.
+Sign up at [openrouteservice.org](https://openrouteservice.org/dev/#/signup) -> Dashboard -> Tokens -> Request a token.
 Free tier: 2,000 requests/day. No credit card needed.
 
 ### 2. Clone and install
@@ -225,7 +225,7 @@ apps/
     ├── views.py                # POST /api/v1/routes/
     ├── serializers.py          # Input validation + OpenAPI schema
     └── services/
-        ├── geocoder.py         # City name → coordinates (ORS, cached 30d)
+        ├── geocoder.py         # City name -> coordinates (ORS, cached 30d)
         ├── routing_client.py   # Driving route (OSRM, cached 24h)
         ├── spatial.py          # Find stations near route
         ├── fuel_optimizer.py   # Cheapest stop algorithm
@@ -250,7 +250,7 @@ All tunable via `.env`:
 
 | Variable | Default | Description |
 |---|---|---|
-| `ORS_API_KEY` | — | Required. OpenRouteService key for geocoding |
+| `ORS_API_KEY` | -- | Required. OpenRouteService key for geocoding |
 | `VEHICLE_MAX_RANGE_MILES` | `500` | Tank range in miles |
 | `VEHICLE_MPG` | `10` | Fuel efficiency |
 | `ROUTE_CORRIDOR_MILES` | `30` | Search width around route |
@@ -259,7 +259,7 @@ All tunable via `.env`:
 | `GEOCODE_CACHE_TTL_SECONDS` | `2592000` | Geocode cache duration (30d) |
 | `OSRM_BASE_URL` | `https://router.project-osrm.org` | Routing server |
 | `REDIS_URL` | `redis://localhost:6379/0` | Cache backend (production) |
-| `DATABASE_URL` | — | PostgreSQL URL (production) |
+| `DATABASE_URL` | -- | PostgreSQL URL (production) |
 
 ---
 
@@ -267,13 +267,13 @@ All tunable via `.env`:
 
 The vehicle starts with a full tank (500 miles). At each decision point:
 
-- **Cheaper station within range →** buy minimum fuel to reach it. No point paying more now for fuel available cheaper ahead.
-- **Everything ahead costs more →** fill the tank completely. Lock in the best price for as many miles as possible.
-- **Destination within range →** buy only what's needed to arrive.
+- **Cheaper station within range ->** buy minimum fuel to reach it. No point paying more now for fuel available cheaper ahead.
+- **Everything ahead costs more ->** fill the tank completely. Lock in the best price for as many miles as possible.
+- **Destination within range ->** buy only what's needed to arrive.
 
-This greedy approach is provably optimal — it produces the lowest possible total fuel spend while respecting the 500-mile range constraint.
+This greedy approach is provably optimal -- it produces the lowest possible total fuel spend while respecting the 500-mile range constraint.
 
-**Why the math checks out for Dallas → LA:**
+**Why the math checks out for Dallas -> LA:**
 ```
 1,443 miles ÷ 10 mpg  = 144.3 gallons needed
 Starting full tank     =  50.0 gallons (free)
@@ -293,9 +293,9 @@ python -m pytest -v
 
 | File | What it tests |
 |---|---|
-| `test_fuel_optimizer.py` | Algorithm correctness — price preference, fill logic, arithmetic |
-| `test_spatial.py` | Distance math — haversine accuracy, simplification, projection |
-| `test_views.py` | HTTP layer — validation, error handling, cache behaviour |
+| `test_fuel_optimizer.py` | Algorithm correctness -- price preference, fill logic, arithmetic |
+| `test_spatial.py` | Distance math -- haversine accuracy, simplification, projection |
+| `test_views.py` | HTTP layer -- validation, error handling, cache behaviour |
 
 ---
 
@@ -312,6 +312,8 @@ python -m pytest -v
 | API docs | drf-spectacular (OpenAPI 3.0 + Swagger UI) |
 | Container | Docker + Docker Compose |
 | Python | 3.12 |
-#   F u e l - O p t i m i z e d - r o u t e s  
- #   F u e l - O p t i m i z a t i o n  
+#   F u e l - O p t i m i z e d - r o u t e s 
+ 
+ #   F u e l - O p t i m i z a t i o n 
+ 
  
