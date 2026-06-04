@@ -1,15 +1,3 @@
-"""
-Address geocoder — ORS Pelias
-------------------------------
-Converts a free-text US address / city name into (latitude, longitude)
-using the OpenRouteService geocoding endpoint (same API key as routing).
-
-Benefits over Nominatim:
-• No 403/rate-limit issues for API requests
-• Results cached 30 days — repeated city lookups cost 0 extra API calls
-• Same ORS free-tier quota (2 000 req/day) shared with routing
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -29,15 +17,7 @@ class GeocodingError(Exception):
 
 
 def geocode_address(address: str) -> tuple[float, float]:
-    """
-    Resolve a US address string to (latitude, longitude).
 
-    Results are cached for GEOCODE_CACHE_TTL seconds (default 30 days)
-    so the same city only ever makes one real API call.
-
-    Raises:
-        GeocodingError if the address cannot be resolved.
-    """
     cache_key = "geocode:" + hashlib.md5(address.lower().strip().encode()).hexdigest()
     cached = cache.get(cache_key)
     if cached is not None:

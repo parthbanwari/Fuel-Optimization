@@ -1,25 +1,3 @@
-"""
-Route service — main orchestrator
------------------------------------
-Pipeline:
-  1. Geocode origin + destination via ORS (cached 30 days).
-  2. Fetch driving route from OSRM (cached 24 h, no API key / no rate limit).
-  3. Simplify route from ~10 000 points to ~1 per 5 miles.
-  4. Build mile-marker index on the simplified polyline.
-  5. Find geocoded stations within the corridor via bounding-box DB query
-     + fast equirectangular projection.
-  6. DP optimizer picks the globally cheapest stop sequence.
-  7. Return assembled response dict.
-
-ORS API calls per unique city pair (first request):
-  • Geocode origin:      1
-  • Geocode destination: 1
-  Total ORS calls:       2   (then 0 forever — cached 30 days)
-
-OSRM calls per unique city pair (first request):
-  • Route:  1   (then 0 for 24 hours — cached)
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -40,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class RouteServiceError(Exception):
-    """Propagated to the view layer as a 400 or 503 response."""
 
     def __init__(self, message: str, status: int = 400):
         super().__init__(message)
@@ -48,21 +25,15 @@ class RouteServiceError(Exception):
 
 
 def plan_route(origin_input: str, destination_input: str) -> dict:
-    """
-    Full pipeline: geocode → route → simplify → find stations → optimise fuel.
 
-    Returns a response dict ready to be serialised by the view.
-    """
     t_start = time.monotonic()
 
-    # ── 1. Geocode ────────────────────────────────────────────────────────────
     try:
         origin_coords = geocode_address(origin_input)
         dest_coords = geocode_address(destination_input)
     except GeocodingError as exc:
         raise RouteServiceError(str(exc), status=400) from exc
 
-    # ── 2. Fetch route via OSRM (with caching) ────────────────────────────────
     cache_key = _route_cache_key(origin_coords, dest_coords)
     route_data: RouteData | None = cache.get(cache_key)
     was_cached = route_data is not None
@@ -83,7 +54,6 @@ def plan_route(origin_input: str, destination_input: str) -> dict:
     else:
         logger.debug("Route served from cache: %s → %s", origin_input, destination_input)
 
-    # ── 3. Simplify route polyline ────────────────────────────────────────────
     spacing = settings.ROUTE_SIMPLIFY_SPACING_MILES
     simplified = simplify_route_points(route_data.points, min_spacing_miles=spacing)
     logger.debug(
@@ -91,17 +61,14 @@ def plan_route(origin_input: str, destination_input: str) -> dict:
         len(route_data.points), len(simplified), spacing,
     )
 
-    # ── 4. Build mile-marker index ────────────────────────────────────────────
     route_index = build_route_index(simplified)
 
-    # ── 5. Find nearby stations ───────────────────────────────────────────────
     corridor = settings.ROUTE_CORRIDOR_MILES
     stations_on_route = find_stations_near_route(
         FuelStation.objects.all(), route_index, corridor_miles=corridor
     )
     logger.debug("%d stations found within %d-mile corridor", len(stations_on_route), corridor)
 
-    # ── 6. DP fuel optimisation ───────────────────────────────────────────────
     try:
         stops, total_cost = optimize_fuel_stops(
             stations_on_route,
